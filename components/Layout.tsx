@@ -7,6 +7,7 @@ import {
   Terminal, 
   History, 
   Search,
+  Settings,
   ChevronRight,
   Menu,
   X
@@ -27,6 +28,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onViewChange }) =
     { id: 'ai-search', label: 'Smart Search', icon: Search },
     { id: 'aliases', label: 'Alias Manager', icon: Terminal },
     { id: 'history', label: 'Cmd History', icon: History },
+    { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
   const NavContent = () => (

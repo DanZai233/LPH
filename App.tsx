@@ -5,6 +5,7 @@ import Dashboard from './components/Dashboard';
 import PackageList from './components/PackageList';
 import AliasManager from './components/AliasManager';
 import SmartSearch from './components/SmartSearch';
+import Settings from './components/Settings';
 import { ViewType } from './types';
 import { History as HistoryIcon } from 'lucide-react';
 
@@ -38,6 +39,8 @@ const App: React.FC = () => {
         return <SmartSearch />;
       case 'history':
         return <HistoryPlaceholder />;
+      case 'settings':
+        return <Settings />;
       default:
         return <Dashboard />;
     }

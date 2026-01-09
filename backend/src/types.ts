@@ -1,4 +1,3 @@
-
 export enum PackageManagerType {
   APT = 'APT',
   YUM = 'YUM',
@@ -26,13 +25,19 @@ export interface Alias {
   description: string;
 }
 
-export interface CommandHistoryItem {
-  id: string;
-  command: string;
-  timestamp: number;
+export interface SystemInfo {
+  os: string;
+  kernel: string;
+  shell: string;
+  uptime: string;
+  managers: PackageManagerType[];
 }
 
-export type ViewType = 'dashboard' | 'packages' | 'aliases' | 'history' | 'ai-search' | 'settings';
+export interface PackageManagerStatus {
+  name: PackageManagerType;
+  available: boolean;
+  version?: string;
+}
 
 export enum AIProvider {
   GEMINI = 'gemini',
@@ -51,5 +56,8 @@ export interface AIConfig {
   model?: string;
   isActive: boolean;
   enabled: boolean;
-  config?: Record<string, any>; // 额外的配置项
+  config?: string; // JSON string for additional config
+  createdAt?: string;
+  updatedAt?: string;
 }
+

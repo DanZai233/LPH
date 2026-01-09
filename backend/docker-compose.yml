@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lph-backend
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:5173}
+      - NODE_ENV=production
+      - DATABASE_PATH=/app/data/lph.db
+    volumes:
+      # 挂载数据库文件目录
+      - ./data:/app/data
+      # 挂载系统文件以获取系统信息（只读）
+      - /etc/os-release:/etc/os-release:ro
+      - /proc:/proc:ro
+    restart: unless-stopped
+    # 使用特权模式以便访问系统命令
+    privileged: true
+

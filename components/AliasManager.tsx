@@ -1,12 +1,33 @@
 
-import React, { useState } from 'react';
-import { MOCK_ALIASES } from '../constants';
+import React, { useState, useEffect } from 'react';
+import { apiClient } from '../services/api';
 import { Plus, Terminal, Trash2, Edit2, Sparkles, Copy, Check } from 'lucide-react';
 import { suggestAlias } from '../services/geminiService';
 import { Alias } from '../types';
 
 const AliasManager: React.FC = () => {
-  const [aliases, setAliases] = useState<Alias[]>(MOCK_ALIASES);
+  const [aliases, setAliases] = useState<Alias[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadAliases();
+  }, []);
+
+  const loadAliases = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await apiClient.getAliases();
+      setAliases(data);
+    } catch (err: any) {
+      console.error('Failed to load aliases:', err);
+      setError(err.message || 'Failed to load aliases');
+      setAliases([]);
+    } finally {
+      setLoading(false);
+    }
+  };
   const [newAlias, setNewAlias] = useState({ name: '', command: '', description: '' });
   const [isAdding, setIsAdding] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
@@ -24,15 +45,27 @@ const AliasManager: React.FC = () => {
     setIsSuggesting(false);
   };
 
-  const addAlias = () => {
+  const addAlias = async () => {
     if (!newAlias.name || !newAlias.command) return;
-    setAliases([...aliases, { ...newAlias, id: Math.random().toString(36).substr(2, 9) }]);
-    setNewAlias({ name: '', command: '', description: '' });
-    setIsAdding(false);
+    try {
+      const created = await apiClient.createAlias(newAlias);
+      setAliases([...aliases, created]);
+      setNewAlias({ name: '', command: '', description: '' });
+      setIsAdding(false);
+    } catch (err: any) {
+      console.error('Failed to create alias:', err);
+      setError(err.message || 'Failed to create alias');
+    }
   };
 
-  const deleteAlias = (id: string) => {
-    setAliases(aliases.filter(a => a.id !== id));
+  const deleteAlias = async (id: string) => {
+    try {
+      await apiClient.deleteAlias(id);
+      setAliases(aliases.filter(a => a.id !== id));
+    } catch (err: any) {
+      console.error('Failed to delete alias:', err);
+      setError(err.message || 'Failed to delete alias');
+    }
   };
 
   const copyAlias = (alias: Alias) => {
@@ -44,6 +77,12 @@ const AliasManager: React.FC = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
+      {error && (
+        <div className="bg-rose-500/10 border border-rose-500/20 rounded-2xl p-4">
+          <p className="text-rose-400">{error}</p>
+        </div>
+      )}
+
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-3xl font-bold text-white">Alias Manager</h2>
@@ -120,8 +159,14 @@ const AliasManager: React.FC = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {aliases.map((alias) => (
+      {loading ? (
+        <div className="text-center py-20">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <p className="text-slate-400 mt-4">Loading aliases...</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {aliases.map((alias) => (
           <div key={alias.id} className="group bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl hover:border-slate-500 transition-all flex flex-col">
             <div className="flex justify-between items-start mb-4">
               <div className="bg-slate-700/50 p-3 rounded-2xl text-blue-400">
@@ -154,7 +199,15 @@ const AliasManager: React.FC = () => {
             <p className="text-sm text-slate-400">{alias.description}</p>
           </div>
         ))}
+        {aliases.length === 0 && !loading && (
+          <div className="md:col-span-2 lg:col-span-3 text-center py-20 bg-slate-800/20 border border-dashed border-slate-700 rounded-3xl">
+            <Terminal size={48} className="mx-auto text-slate-600 mb-4" />
+            <h3 className="text-slate-400 font-medium">No aliases</h3>
+            <p className="text-slate-500 text-sm mt-1">Create your first alias to get started.</p>
+          </div>
+        )}
       </div>
+      )}
     </div>
   );
 };

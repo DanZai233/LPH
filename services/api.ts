@@ -1,4 +1,40 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3888/api';
+// 获取 API 基础 URL
+// 在浏览器中，需要根据当前页面位置推断后端地址
+function getApiBaseUrl(): string {
+  const envUrl = import.meta.env.VITE_API_URL;
+  
+  // 如果在浏览器环境中
+  if (typeof window !== 'undefined') {
+    // 如果构建时设置了环境变量且是完整 URL，使用它
+    if (envUrl && (envUrl.startsWith('http://') || envUrl.startsWith('https://'))) {
+      return envUrl;
+    }
+    
+    // 否则根据当前页面位置推断
+    const host = window.location.hostname;
+    const protocol = window.location.protocol;
+    const port = window.location.port;
+    
+    // 如果是 localhost 或 127.0.0.1，使用本地端口
+    if (host === 'localhost' || host === '127.0.0.1') {
+      return 'http://localhost:3888/api';
+    }
+    
+    // 在生产环境中，使用相同主机但后端端口
+    // 如果前端在 3777 端口，后端在 3888 端口
+    return `${protocol}//${host}:3888/api`;
+  }
+  
+  // 服务器端渲染或开发环境
+  return envUrl || 'http://localhost:3888/api';
+}
+
+const API_BASE_URL = getApiBaseUrl();
+
+// 在开发环境中输出 API URL 用于调试
+if (import.meta.env.DEV) {
+  console.log('API Base URL:', API_BASE_URL);
+}
 
 export interface Package {
   id: string;
@@ -209,5 +245,4 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);
-export { AIProvider };
 

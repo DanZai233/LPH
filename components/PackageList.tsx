@@ -1,24 +1,47 @@
 
-import React, { useState, useMemo } from 'react';
-import { MOCK_PACKAGES } from '../constants';
+import React, { useState, useMemo, useEffect } from 'react';
+import { apiClient } from '../services/api';
 import { Search, Filter, Info, Package as PackageIcon, Download, Trash2, Terminal } from 'lucide-react';
-import { PackageManagerType } from '../types';
+import { PackageManagerType, Package } from '../types';
 
 const PackageList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterManager, setFilterManager] = useState<PackageManagerType | 'ALL'>('ALL');
   const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
+  const [packages, setPackages] = useState<Package[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadPackages();
+  }, []);
+
+  const loadPackages = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await apiClient.getPackages();
+      setPackages(data);
+    } catch (err: any) {
+      console.error('Failed to load packages:', err);
+      setError(err.message || 'Failed to load packages');
+      // 如果 API 失败，保持空数组而不是崩溃
+      setPackages([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredPackages = useMemo(() => {
-    return MOCK_PACKAGES.filter(pkg => {
+    return packages.filter(pkg => {
       const matchesSearch = pkg.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                            pkg.description.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesFilter = filterManager === 'ALL' || pkg.manager === filterManager;
       return matchesSearch && matchesFilter;
     });
-  }, [searchTerm, filterManager]);
+  }, [packages, searchTerm, filterManager]);
 
-  const selectedPackage = MOCK_PACKAGES.find(p => p.id === selectedPackageId);
+  const selectedPackage = packages.find(p => p.id === selectedPackageId);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -50,9 +73,21 @@ const PackageList: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-4">
-          {filteredPackages.map(pkg => (
+      {error && (
+        <div className="bg-rose-500/10 border border-rose-500/20 rounded-2xl p-4 mb-4">
+          <p className="text-rose-400">{error}</p>
+        </div>
+      )}
+
+      {loading ? (
+        <div className="text-center py-20">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <p className="text-slate-400 mt-4">Loading packages...</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-4">
+            {filteredPackages.map(pkg => (
             <div 
               key={pkg.id}
               onClick={() => setSelectedPackageId(pkg.id)}
@@ -84,15 +119,15 @@ const PackageList: React.FC = () => {
                 </div>
               </div>
             </div>
-          ))}
-          {filteredPackages.length === 0 && (
-            <div className="text-center py-20 bg-slate-800/20 border border-dashed border-slate-700 rounded-3xl">
-              <PackageIcon size={48} className="mx-auto text-slate-600 mb-4" />
-              <h3 className="text-slate-400 font-medium">No packages found</h3>
-              <p className="text-slate-500 text-sm mt-1">Try a different search term or filter.</p>
-            </div>
-          )}
-        </div>
+            ))}
+            {filteredPackages.length === 0 && !loading && (
+              <div className="text-center py-20 bg-slate-800/20 border border-dashed border-slate-700 rounded-3xl">
+                <PackageIcon size={48} className="mx-auto text-slate-600 mb-4" />
+                <h3 className="text-slate-400 font-medium">No packages found</h3>
+                <p className="text-slate-500 text-sm mt-1">Try a different search term or filter.</p>
+              </div>
+            )}
+          </div>
 
         <div className="lg:col-span-1">
           {selectedPackage ? (
@@ -163,7 +198,8 @@ const PackageList: React.FC = () => {
             </div>
           )}
         </div>
-      </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -30,8 +30,6 @@ services:
     container_name: lph-frontend
     ports:
       - "3777:80"
-    environment:
-      - VITE_API_URL=http://localhost:3888/api
     depends_on:
       - backend
     restart: unless-stopped

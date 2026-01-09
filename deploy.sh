@@ -146,13 +146,13 @@ docker run -d \
   --restart unless-stopped \
   lph-backend:latest
 
-# 启动前端
+# 启动前端（注意：环境变量需要在构建时设置，运行时无法更改）
+# 如果构建时没有设置 VITE_API_URL，会使用默认值
 echo "启动前端容器..."
 docker run -d \
   --name lph-frontend \
   --network lph-network \
   -p 3777:80 \
-  -e VITE_API_URL=http://localhost:3888/api \
   --restart unless-stopped \
   lph-frontend:latest
 

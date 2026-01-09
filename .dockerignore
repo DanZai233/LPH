@@ -1,0 +1,14 @@
+node_modules
+dist
+build
+.env
+.env.local
+.git
+.gitignore
+README.md
+*.md
+.DS_Store
+backend/node_modules
+backend/dist
+backend/data
+*.log

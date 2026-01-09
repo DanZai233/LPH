@@ -1,5 +1,47 @@
 # 部署指南
 
+## 一键部署到远程服务器
+
+### 从 macOS ARM 部署到 x86 Linux 服务器
+
+如果你在 macOS ARM 架构机器上开发，需要部署到 x86 Linux 服务器，可以使用一键部署脚本：
+
+```bash
+# 运行部署脚本
+./deploy.sh
+```
+
+**部署脚本功能：**
+- ✅ 自动使用 Docker Buildx 构建 linux/amd64 平台镜像（跨平台构建）
+- ✅ 自动传输镜像到远程服务器（通过 SSH）
+- ✅ 自动在远程服务器上加载镜像并启动服务
+- ✅ 自动清理临时文件
+
+**前置要求：**
+1. 本地已安装 Docker 和 Docker Buildx
+2. 配置了 SSH 连接到远程服务器（`ssh dz` 可以连接）
+3. 远程服务器已安装 Docker 和 Docker Compose
+
+**部署流程：**
+1. 脚本会在本地构建适合 linux/amd64 平台的镜像
+2. 将镜像打包并传输到远程服务器
+3. 在远程服务器上加载镜像
+4. 使用 docker-compose 启动服务
+
+**服务端口：**
+- 前端：3777
+- 后端：3888
+
+**查看远程日志：**
+```bash
+ssh dz 'cd ~/lph && docker-compose logs -f'
+```
+
+**停止远程服务：**
+```bash
+ssh dz 'cd ~/lph && docker-compose down'
+```
+
 ## Docker 部署（推荐）
 
 ### 快速开始
@@ -15,7 +57,7 @@ cd LPH
 在项目根目录创建 `.env` 文件：
 ```env
 GEMINI_API_KEY=your_gemini_api_key_here
-CORS_ORIGIN=http://localhost:5173
+CORS_ORIGIN=http://localhost:3777
 ```
 
 3. **启动所有服务**
@@ -24,8 +66,8 @@ docker-compose up -d
 ```
 
 这将启动：
-- 后端服务：http://localhost:3001
-- 前端服务：http://localhost:5173
+- 后端服务：http://localhost:3888
+- 前端服务：http://localhost:3777
 
 4. **查看日志**
 ```bash
@@ -46,11 +88,11 @@ cd backend
 
 # 创建 .env 文件
 cat > .env << EOF
-PORT=3001
+PORT=3888
 GEMINI_API_KEY=your_gemini_api_key_here
-CORS_ORIGIN=http://localhost:5173
+CORS_ORIGIN=http://localhost:3777
 NODE_ENV=production
-DATABASE_PATH=/app/data/lph.db
+DATABASE_PATH=/app/data
 EOF
 
 # 使用 docker-compose
@@ -58,7 +100,7 @@ docker-compose up -d
 
 # 或使用 docker 命令
 docker build -t lph-backend .
-docker run -d -p 3001:3001 \
+docker run -d -p 3888:3888 \
   --env-file .env \
   -v $(pwd)/data:/app/data \
   --privileged \
@@ -78,9 +120,9 @@ npm install
 
 # 创建环境变量文件
 cat > .env << EOF
-PORT=3001
+PORT=3888
 GEMINI_API_KEY=your_gemini_api_key_here
-CORS_ORIGIN=http://localhost:5173
+CORS_ORIGIN=http://localhost:3777
 NODE_ENV=development
 EOF
 
@@ -101,7 +143,7 @@ npm start
 npm install
 
 # 创建 .env 文件
-echo "VITE_API_URL=http://localhost:3001/api" > .env
+echo "VITE_API_URL=http://localhost:3888/api" > .env
 echo "GEMINI_API_KEY=your_gemini_api_key_here" >> .env
 
 # 开发模式
@@ -131,8 +173,8 @@ npm run preview
    - 监控资源使用情况
 
 4. **数据库**
-   - 定期备份 SQLite 数据库
-   - 考虑迁移到 PostgreSQL/MySQL（如需要）
+   - 定期备份 JSON 数据文件（`backend/data/aliases.json` 和 `backend/data/ai_configs.json`）
+   - 数据文件存储在 Docker volume 中，确保 volume 持久化
 
 ## 故障排除
 

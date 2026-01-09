@@ -7,13 +7,13 @@ services:
       dockerfile: Dockerfile
     container_name: lph-backend
     ports:
-      - "3001:3001"
+      - "3888:3888"
     environment:
-      - PORT=3001
+      - PORT=3888
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
-      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:5173}
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:3777}
       - NODE_ENV=production
-      - DATABASE_PATH=/app/data/lph.db
+      - DATABASE_PATH=/app/data
     volumes:
       # 挂载数据库文件目录
       - ./data:/app/data

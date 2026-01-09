@@ -31,8 +31,8 @@
 ### 后端
 - Node.js + Express
 - TypeScript
-- SQLite (Better-SQLite3)
-- Google Generative AI (Gemini)
+- JSON 文件存储（无需数据库）
+- Google Generative AI (Gemini) / 多 AI 供应商支持
 
 ## 项目结构
 
@@ -91,16 +91,16 @@ cd ..
 创建 `.env` 文件（前端）：
 
 ```env
-VITE_API_URL=http://localhost:3001/api
+VITE_API_URL=http://localhost:3888/api
 GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
 创建 `backend/.env` 文件（后端）：
 
 ```env
-PORT=3001
+PORT=3888
 GEMINI_API_KEY=your_gemini_api_key_here
-CORS_ORIGIN=http://localhost:5173
+CORS_ORIGIN=http://localhost:3777
 NODE_ENV=development
 ```
 
@@ -111,7 +111,7 @@ cd backend
 npm run dev
 ```
 
-后端服务将在 `http://localhost:3001` 启动
+后端服务将在 `http://localhost:3888` 启动
 
 #### 6. 启动前端开发服务器
 
@@ -119,7 +119,23 @@ npm run dev
 npm run dev
 ```
 
-前端应用将在 `http://localhost:5173` 启动
+前端应用将在 `http://localhost:3777` 启动
+
+### 一键部署到远程服务器
+
+如果要从 macOS ARM 架构部署到 x86 Linux 服务器，可以使用一键部署脚本：
+
+```bash
+# 运行部署脚本（需要先配置 SSH 连接：ssh dz）
+./deploy.sh
+```
+
+脚本会自动：
+- 使用 Docker Buildx 构建 linux/amd64 平台镜像（跨平台构建）
+- 传输镜像到远程服务器
+- 在远程服务器上加载镜像并启动服务
+
+详细说明请参考 [DEPLOYMENT.md](./DEPLOYMENT.md)
 
 ### Docker 部署
 
@@ -129,7 +145,7 @@ npm run dev
 
 ```env
 GEMINI_API_KEY=your_gemini_api_key_here
-CORS_ORIGIN=http://localhost:5173
+CORS_ORIGIN=http://localhost:3777
 ```
 
 2. 启动所有服务：
@@ -139,8 +155,8 @@ docker-compose up -d
 ```
 
 这将启动：
-- 后端服务：`http://localhost:3001`
-- 前端服务：`http://localhost:5173`
+- 后端服务：`http://localhost:3888`
+- 前端服务：`http://localhost:3777`
 
 3. 查看日志：
 
@@ -161,9 +177,9 @@ docker-compose down
 ```bash
 cd backend
 docker build -t lph-backend .
-docker run -d -p 3001:3001 \
+docker run -d -p 3888:3888 \
   -e GEMINI_API_KEY=your_api_key \
-  -e CORS_ORIGIN=http://localhost:5173 \
+  -e CORS_ORIGIN=http://localhost:3777 \
   -v $(pwd)/data:/app/data \
   --privileged \
   --name lph-backend \
@@ -174,8 +190,8 @@ docker run -d -p 3001:3001 \
 
 ```bash
 docker build -f Dockerfile.frontend -t lph-frontend .
-docker run -d -p 5173:80 \
-  -e VITE_API_URL=http://localhost:3001/api \
+docker run -d -p 3777:80 \
+  -e VITE_API_URL=http://localhost:3888/api \
   --name lph-frontend \
   lph-frontend
 ```
@@ -267,7 +283,7 @@ npm run preview  # 预览生产构建
 1. **系统权限**：后端需要执行系统命令来获取包信息，在 Docker 中需要 `--privileged` 标志
 2. **包管理器**：确保系统中安装了相应的包管理器工具（apt、yum、pacman 等）
 3. **AI 功能**：需要在 Settings 页面配置至少一个 AI 供应商并激活，AI 相关功能才会可用
-4. **数据库**：配置和别名数据存储在 SQLite 数据库中，默认位置为 `backend/data/lph.db`
+4. **数据库**：配置和别名数据存储在 JSON 文件中，默认位置为 `backend/data/` 目录（`aliases.json` 和 `ai_configs.json`）
 5. **API 密钥安全**：API 密钥存储在本地数据库中，仅显示最后 4 位字符，请妥善保管
 
 ## 安全考虑

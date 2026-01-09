@@ -2,7 +2,7 @@ import { getActiveAIConfig } from './config';
 import { AIProviderAdapter } from './ai-providers';
 
 async function getAIAdapter(): Promise<AIProviderAdapter | null> {
-  const config = getActiveAIConfig();
+  const config = await getActiveAIConfig();
   if (!config) {
     return null;
   }

@@ -34,7 +34,7 @@ RUN rm -rf node_modules && npm ci --only=production
 RUN mkdir -p /app/data
 
 # 暴露端口
-EXPOSE 3001
+EXPOSE 3888
 
 # 启动应用
 CMD ["node", "dist/index.js"]

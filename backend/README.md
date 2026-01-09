@@ -38,9 +38,9 @@ npm start
 docker build -t lph-backend .
 
 # 运行容器
-docker run -d -p 3001:3001 \
+docker run -d -p 3888:3888 \
   -e GEMINI_API_KEY=your_api_key \
-  -e CORS_ORIGIN=http://localhost:5173 \
+  -e CORS_ORIGIN=http://localhost:3777 \
   -v $(pwd)/data:/app/data \
   --privileged \
   --name lph-backend \
@@ -53,9 +53,9 @@ docker run -d -p 3001:3001 \
 
 ## 环境变量
 
-- `PORT` - 服务端口（默认：3001）
+- `PORT` - 服务端口（默认：3888）
 - `GEMINI_API_KEY` - Google Gemini API 密钥（可选，用于 AI 功能）
-- `CORS_ORIGIN` - CORS 允许的来源（默认：http://localhost:5173）
+- `CORS_ORIGIN` - CORS 允许的来源（默认：http://localhost:3777）
 - `NODE_ENV` - 环境（development/production）
 - `DATABASE_PATH` - SQLite 数据库路径（默认：./lph.db）
 

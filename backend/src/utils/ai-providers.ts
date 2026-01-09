@@ -100,14 +100,15 @@ export class AIProviderAdapter {
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+        const error = await response.json().catch(() => ({ error: 'Unknown error' })) as { error?: { message?: string } };
         return { text: '', error: error.error?.message || `HTTP ${response.status}` };
       }
 
-      const data = await response.json();
-      return { text: data.choices[0]?.message?.content || '' };
-    } catch (error: any) {
-      return { text: '', error: error.message || 'OpenAI API error' };
+      const data = await response.json() as { choices?: Array<{ message?: { content?: string } }> };
+      return { text: data.choices?.[0]?.message?.content || '' };
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      return { text: '', error: err.message || 'OpenAI API error' };
     }
   }
 
@@ -116,13 +117,27 @@ export class AIProviderAdapter {
       const baseUrl = this.config.baseUrl || 'https://openrouter.ai/api/v1';
       const model = this.config.model || 'openai/gpt-3.5-turbo';
 
+      // Handle config which might be a JSON string or object
+      let configObj: Record<string, any> = {};
+      if (this.config.config) {
+        if (typeof this.config.config === 'string') {
+          try {
+            configObj = JSON.parse(this.config.config);
+          } catch (e) {
+            configObj = {};
+          }
+        } else {
+          configObj = this.config.config;
+        }
+      }
+
       const response = await fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.config.apiKey}`,
-          'HTTP-Referer': this.config.config?.httpReferer || 'http://localhost:5173',
-          'X-Title': this.config.config?.appName || 'Linux Package Hub',
+          'HTTP-Referer': configObj.httpReferer || 'http://localhost:3777',
+          'X-Title': configObj.appName || 'Linux Package Hub',
         },
         body: JSON.stringify({
           model,
@@ -136,14 +151,15 @@ export class AIProviderAdapter {
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+        const error = await response.json().catch(() => ({ error: 'Unknown error' })) as { error?: { message?: string } };
         return { text: '', error: error.error?.message || `HTTP ${response.status}` };
       }
 
-      const data = await response.json();
-      return { text: data.choices[0]?.message?.content || '' };
-    } catch (error: any) {
-      return { text: '', error: error.message || 'OpenRouter API error' };
+      const data = await response.json() as { choices?: Array<{ message?: { content?: string } }> };
+      return { text: data.choices?.[0]?.message?.content || '' };
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      return { text: '', error: err.message || 'OpenRouter API error' };
     }
   }
 
@@ -171,14 +187,15 @@ export class AIProviderAdapter {
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+        const error = await response.json().catch(() => ({ error: 'Unknown error' })) as { error?: { message?: string } };
         return { text: '', error: error.error?.message || `HTTP ${response.status}` };
       }
 
-      const data = await response.json();
-      return { text: data.choices[0]?.message?.content || '' };
-    } catch (error: any) {
-      return { text: '', error: error.message || 'VolcEngine API error' };
+      const data = await response.json() as { choices?: Array<{ message?: { content?: string } }> };
+      return { text: data.choices?.[0]?.message?.content || '' };
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      return { text: '', error: err.message || 'VolcEngine API error' };
     }
   }
 
@@ -210,14 +227,15 @@ export class AIProviderAdapter {
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+        const error = await response.json().catch(() => ({ error: 'Unknown error' })) as { error?: { message?: string } };
         return { text: '', error: error.error?.message || `HTTP ${response.status}` };
       }
 
-      const data = await response.json();
-      return { text: data.content[0]?.text || '' };
-    } catch (error: any) {
-      return { text: '', error: error.message || 'Anthropic API error' };
+      const data = await response.json() as { content?: Array<{ text?: string }> };
+      return { text: data.content?.[0]?.text || '' };
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      return { text: '', error: err.message || 'Anthropic API error' };
     }
   }
 }

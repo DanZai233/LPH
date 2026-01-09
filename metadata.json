@@ -1,0 +1,5 @@
+{
+  "name": "Linux Package Hub (LPH)",
+  "description": "A unified dashboard for managing Linux packages across multiple managers (APT, YUM, Pacman, etc.), managing aliases, and providing AI-powered command discovery and documentation.",
+  "requestFramePermissions": []
+}
